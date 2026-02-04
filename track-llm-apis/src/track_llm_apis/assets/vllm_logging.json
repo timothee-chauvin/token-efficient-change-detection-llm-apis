@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+  "loggers": {
+    "vllm": {
+      "handlers": ["vllm"],
+      "level": "WARNING",
+      "propagate": false
+    }
+  },
+  "handlers": {
+    "vllm": {
+      "class": "logging.StreamHandler",
+      "level": "WARNING"
+    }
+  }
+}

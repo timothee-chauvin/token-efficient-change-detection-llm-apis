@@ -1,0 +1,68 @@
+[project]
+name = "track-llm-apis"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "aiohttp>=3.11.18",
+    "beartype>=0.21.0",
+    "datasets>=3.6.0",
+    "fire>=0.7.0",
+    "frozendict>=2.4.6",
+    "frozenlist>=1.6.0",
+    "jaxtyping>=0.3.2",
+    "kaleido>=1.1.0",
+    "lightning>=2.5.2",
+    "matplotlib>=3.10.3",
+    "numpy>=2.2.6",
+    "nvidia-modelopt[hf]>=0.33.0",
+    "openai>=1.78.1",
+    "orjson>=3.11.3",
+    "peft>=0.16.0",
+    "plotly>=6.1.1",
+    "pydantic-settings>=2.10.1",
+    "python-dotenv>=1.1.0",
+    "rapidgzip>=0.15.2",
+    "requests>=2.32.3",
+    "scikit-learn>=1.7.1",
+    # due to a bug https://github.com/statsmodels/statsmodels/issues/9584
+    "scipy<=1.15.3",
+    "statsmodels>=0.14.4",
+    "torch>=2.7.1",
+    "tqdm>=4.67.1",
+    "transformers>=4.53.1",
+    "vllm>=0.10.0",
+    "vulture>=2.14",
+    "xxhash>=3.5.0",
+]
+
+[tool.uv.sources]
+microsoft-python-type-stubs = { git = "https://github.com/microsoft/python-type-stubs.git" }
+
+[dependency-groups]
+dev = [
+    "microsoft-python-type-stubs",
+    "pre-commit>=4.2.0",
+    "pyright>=1.1.403",
+    "pytest>=8.4.1",
+    "pytest-env>=1.1.5",
+    "ruff>=0.11.9",
+]
+
+[build-system]
+requires = ["uv_build==0.8.14"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+extend-select = [
+    "UP", # pyupgrade
+    "I",  # isort
+]
+# ignore F722 due to jaxtyping string annotations interpreted as forward references
+extend-ignore = ["F722"]
+
+[tool.pytest.ini_options]
+env = ["CUBLAS_WORKSPACE_CONFIG=:4096:8"]
