@@ -1,1 +1,0 @@
-{"model":"openai/gpt-4o-mini","provider":"openai","cost":[0.15,0.6],"cost_per_request":1.8e-6,"note":"stable over the whole period (control)","postscript":null}

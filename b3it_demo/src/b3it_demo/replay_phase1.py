@@ -1,4 +1,4 @@
-"""Replay of phase 1: border-input discovery and reference estimation."""
+"""Replay of phase 1: Border Input discovery and reference estimation."""
 
 import time
 from collections import Counter
@@ -52,13 +52,12 @@ def replay_phase_1a(endpoint: EndpointData, fast: bool) -> list[str]:
     c = config.bi.phase_1
     probes = iter_probes(endpoint.phase_1)
     phase_header(
-        "Phase 1a — border input discovery",
+        "Phase 1a — Border Input discovery",
         f"Probe the endpoint with up to {c.tokens_per_endpoint} single-token prompts, "
-        f"{c.queries_per_token} queries each at T=0, one output token per query.\n"
-        "A prompt whose top output token is not always the same is a "
-        "[bold]border input[/] (BI) candidate.\n\n"
+        f"{c.queries_per_token} queries each at T=0, one output token per query.\n\n"
         f"You are about to watch the {len(probes)} recorded probes stream by; "
-        "each flip found becomes a candidate.",
+        "each prompt with an unstable output becomes a [bold]Border Input[/] (BI) "
+        "candidate.",
     )
     pause(fast, "press Enter to start probing")
 
@@ -119,7 +118,7 @@ def replay_phase_1b(
 
     table = Table(show_edge=False, pad_edge=False)
     table.add_column("rank", justify="right", style="dim")
-    table.add_column("border input")
+    table.add_column("Border Input")
     table.add_column("reference distribution")
     table.add_column("balance", justify="right")
     table.add_column("")
@@ -141,7 +140,7 @@ def replay_phase_1b(
 
     cost = estimate_cost(endpoint, {p: r.reference_samples for p in reference})
     console.print(
-        f"\n  [bold]{len(kept)} border inputs selected[/] "
+        f"\n  [bold]{len(kept)} Border Inputs selected[/] "
         f"({len(reference)} candidates × {r.reference_samples} queries, ≈{money(cost)})"
     )
     return {p: reference[p] for p in kept}

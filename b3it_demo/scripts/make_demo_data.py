@@ -15,63 +15,25 @@ from pathlib import Path
 
 import orjson
 
+from b3it_demo.data import ENDPOINT_SLUG
+
 DEMO_DATA_DIR = Path(__file__).parent.parent / "data"
 MAX_SAMPLES = 10
 LAST_DAY = "2026-02-28"
 
-ENDPOINTS = {
-    "mistralai2fmistral-7b-instruct-v0.323together": {
-        "model": "mistralai/mistral-7b-instruct-v0.3",
-        "provider": "together",
-        "cost": [0.2, 0.2],
-        "cost_per_request": 0.0,
-        "note": "silent model change caught on 2026-01-30",
-        "postscript": (
-            "Together's changelog corroborates the detection: on 2026-01-29, requests "
-            "for mistral-7b-instruct-v0.3 started being redirected to "
-            'Ministral-3-14B-Instruct-2512 as a "same-lineage upgrade with compatible '
-            'behavior" (https://docs.together.ai/docs/changelog). B3IT flagged the '
-            "swap at the next daily batch."
-        ),
-    },
-    "deepseek2fdeepseek-chat-v3-032423hyperbolic2ffp8": {
-        "model": "deepseek/deepseek-chat-v3-0324",
-        "provider": "hyperbolic/fp8",
-        "cost": [1.25, 1.25],
-        "cost_per_request": 0.0,
-        "note": "silent model change caught on 2026-01-24",
-        "postscript": None,
-    },
-    "openai2fgpt-4o-mini23azure": {
-        "model": "openai/gpt-4o-mini",
-        "provider": "azure",
-        "cost": [0.15, 0.6],
-        "cost_per_request": 1.8e-06,
-        "note": "silent change caught on 2026-02-04, while the same model at OpenAI stayed stable",
-        "postscript": (
-            "The change lasted from 2026-02-04 to 2026-02-18, then mostly reverted: "
-            "the most balanced border inputs collapsed to near-deterministic outputs "
-            "for two weeks — consistent with a serving-stack change on this Azure "
-            "deployment, later rolled back. The same model served by OpenAI stayed "
-            "stable throughout."
-        ),
-    },
-    "openai2fgpt-4o-mini23openai": {
-        "model": "openai/gpt-4o-mini",
-        "provider": "openai",
-        "cost": [0.15, 0.6],
-        "cost_per_request": 1.8e-06,
-        "note": "stable over the whole period (control)",
-        "postscript": None,
-    },
-    "qwen2fqwen3-235b-a22b-250723wandb2fbf16": {
-        "model": "qwen/qwen3-235b-a22b-2507",
-        "provider": "wandb/bf16",
-        "cost": [0.1, 0.1],
-        "cost_per_request": 0.0,
-        "note": "flagged unstable: output distributions too noisy for reliable detection",
-        "postscript": None,
-    },
+META = {
+    "model": "mistralai/mistral-7b-instruct-v0.3",
+    "provider": "together",
+    "cost": [0.2, 0.2],
+    "cost_per_request": 0.0,
+    "note": "silent model change caught on 2026-01-30",
+    "postscript": (
+        "Together's changelog corroborates the detection: on 2026-01-29, requests "
+        "for mistral-7b-instruct-v0.3 started being redirected to "
+        'Ministral-3-14B-Instruct-2512 as a "same-lineage upgrade with compatible '
+        'behavior" (https://docs.together.ai/docs/changelog). B3IT flagged the '
+        "swap at the next daily batch."
+    ),
 }
 
 
@@ -99,18 +61,17 @@ def extract_phase_2(phase_2_dir: Path) -> dict:
 
 def main(monitor_repo: str) -> None:
     data_dir = Path(monitor_repo) / "website/data/b3it"
-    for slug, meta in ENDPOINTS.items():
-        dest = DEMO_DATA_DIR / slug
-        dest.mkdir(parents=True, exist_ok=True)
+    dest = DEMO_DATA_DIR / ENDPOINT_SLUG
+    dest.mkdir(parents=True, exist_ok=True)
 
-        shutil.copy(data_dir / "phase_1/T=0" / f"{slug}.json", dest / "phase_1.json")
+    shutil.copy(data_dir / "phase_1/T=0" / f"{ENDPOINT_SLUG}.json", dest / "phase_1.json")
 
-        phase_2 = extract_phase_2(data_dir / "phase_2" / slug)
-        (dest / "phase_2.json").write_bytes(orjson.dumps(phase_2))
-        (dest / "meta.json").write_bytes(orjson.dumps(meta))
+    phase_2 = extract_phase_2(data_dir / "phase_2" / ENDPOINT_SLUG)
+    (dest / "phase_2.json").write_bytes(orjson.dumps(phase_2))
+    (dest / "meta.json").write_bytes(orjson.dumps(META))
 
-        n_days = len({ts for b in phase_2.values() for ts in b})
-        print(f"{slug}: {len(phase_2)} prompts, {n_days} days")
+    n_days = len({ts for b in phase_2.values() for ts in b})
+    print(f"{ENDPOINT_SLUG}: {len(phase_2)} prompts, {n_days} days")
 
 
 if __name__ == "__main__":

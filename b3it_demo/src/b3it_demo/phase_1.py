@@ -1,7 +1,7 @@
 """Border-input candidate extraction from raw phase-1a data.
 
 Same criterion as the production monitor's parse_phase_1_results (bi/reinit.py):
-a prompt is a border-input candidate when it has >=2 distinct non-empty outputs.
+a prompt is a Border Input candidate when it has >=2 distinct non-empty outputs.
 Adapted to read a single bundled file instead of globbing a results directory.
 """
 

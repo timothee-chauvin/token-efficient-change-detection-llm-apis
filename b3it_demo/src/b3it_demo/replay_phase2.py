@@ -1,4 +1,4 @@
-"""Replay of phase 2: daily monitoring of the selected border inputs."""
+"""Replay of phase 2: daily monitoring of the selected Border Inputs."""
 
 import statistics
 import time
@@ -31,7 +31,7 @@ def deviates(vals: list[float], i: int) -> bool:
 
 
 def sampling_flicker(day_samples: list[tuple[str, str]], fast: bool) -> None:
-    """Briefly show the day's (border input → output token) queries streaming by."""
+    """Briefly show the day's (Border Input → output token) queries streaming by."""
     if fast or not day_samples:
         return
     with console.status("") as status:
@@ -49,13 +49,19 @@ def replay_phase_2(
     c = config.bi.phase_2
     queries_per_day = len(reference) * c.queries_per_token
     day_cost = estimate_cost(endpoint, {p: c.queries_per_token for p in reference})
+    d = config.bi.detection
     phase_header(
         "Phase 2 — monitoring",
-        f"Every day, sample each of the {len(reference)} border inputs "
+        f"Every day, sample each of the {len(reference)} Border Inputs "
         f"{c.queries_per_token}× ({queries_per_day} one-token queries "
         f"≈ {money(day_cost)}/day).\n"
         "Compare each day's output distributions to the reference (mean total "
-        "variation distance)\nand feed the series to the adaptive detector.\n\n"
+        "variation distance)\nand feed the series to the adaptive detector: "
+        f"a day [bold]deviates[/] when its TV departs from the mean\nof a trailing "
+        f"{d.window}-day baseline (excluding the {d.exclusion} most recent days) "
+        f"by more than {d.abs_delta:g}\nand {d.sigma_k:g}σ of that baseline; "
+        f"{d.persistence} consecutive deviating days flag a [bold]change[/], "
+        "dated at the first.\n\n"
         "The recorded days will now replay one by one — watch the TV column.",
     )
     pause(fast, "press Enter to start monitoring")
