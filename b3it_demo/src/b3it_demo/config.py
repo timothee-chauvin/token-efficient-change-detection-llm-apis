@@ -11,9 +11,7 @@ root = Path(__file__).parent.parent.parent
 class Phase1Config(BaseModel):
     queries_per_token: int
     tokens_per_endpoint: int
-    border_input_candidate_ratio: int
     target_border_inputs: int
-    queries_per_candidate: int
 
 
 class Phase2Config(BaseModel):

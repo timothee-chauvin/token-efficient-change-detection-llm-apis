@@ -15,7 +15,7 @@ Concretely, B3IT runs in two phases:
 
 ## Demo: replay a real detection
 
-Did you know that if you had something running on `mistral-7b-instruct-v0.3` from Together AI, they silently (though with a public announcement) redirected it to the entirely different `Ministral-3-14B-Instruct-2512` in January 2026? The demo replays the full pipeline on the **real data recorded by our production monitor** as it caught this change.
+Did you know that if you had something running on `mistral-7b-instruct-v0.3` from Together AI, they redirected it to the entirely different `Ministral-3-14B-Instruct-2512` in January 2026? If you were using the model through OpenRouter like us, you wouldn't have known, as even [OpenRouter seemingly hadn't been notified of the change](https://x.com/pingToven/status/2035724769413202148). The demo replays the full pipeline on the **real data recorded by our production monitor** as it caught this change.
 
 Requires only [uv](https://docs.astral.sh/uv/):
 
@@ -26,7 +26,7 @@ uv run b3it-demo
 
 ![B3IT demo replay](b3it_demo/assets/demo.svg)
 
-The detection code in the demo (`detection.py`, `analyze.py`) is vendored unchanged from the production monitor, with its production configuration; the replayed data is the monitor's raw recorded samples.
+The detection code in the demo (`detection.py`, `analyze.py`) is vendored unchanged from the production monitor, with its production configuration (as of 2026-07-19); the replayed data is the monitor's raw recorded samples.
 
 ## Repository layout
 

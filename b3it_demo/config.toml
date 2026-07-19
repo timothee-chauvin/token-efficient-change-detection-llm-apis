@@ -7,9 +7,7 @@ samples_per_day = 200  # BIs (top_k_bis=20) x samples/BI/day (queries_per_token=
 [bi.phase_1]
 queries_per_token = 3
 tokens_per_endpoint = 5000
-border_input_candidate_ratio = 2
 target_border_inputs = 50
-queries_per_candidate = 100
 
 [bi.phase_2]
 queries_per_token = 10
