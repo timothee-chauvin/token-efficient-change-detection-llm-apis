@@ -1,21 +1,21 @@
 # Token-Efficient Change Detection in LLM APIs
 
-Code for the paper [**Token-Efficient Change Detection in LLM APIs**](https://arxiv.org/abs/2602.11083).
+Code for the paper [**Token-Efficient Change Detection in LLM APIs**](https://arxiv.org/abs/2602.11083) (ICML 2026). See also the [blog post](https://tchauvin.com/change-detection-llm-apis).
 
-LLM providers silently change what runs behind their APIs: model swaps, quantization, serving-stack updates. Detecting this from the outside is expensive — unless you know where to look. **B3IT (Black-Box Border Input Tracking)** detects such changes from output tokens alone, at ~30× lower cost than existing methods, with no access to weights or logprobs.
+LLM APIs are opaque black boxes, even for open-weight models. Can we continuously monitor them for changes? Existing methods are either too expensive for deployment at scale, or require initial white-box access to model weights or grey-box access to log probabilities. **Black-Box Border Input Tracking (B3IT)** achieves both low cost and strict black-box operation, observing only output tokens: it reduces costs by 30× compared to existing methods, only requesting a single token of output at a time, with very short prompts.
 
 ## How it works
 
-Some prompts sit right on a decision border of the model: their top output token is not always the same across queries, even at temperature 0. We call them **Border Inputs**. Example, recorded against `mistral-7b-instruct-v0.3` on Together: the single-token prompt `'hike'` answered `' H'` 2 times out of 3, and `' Title'` once. Because these inputs sit where the model's output distribution is most sensitive, a small change to the model moves their output distribution measurably — that's where change detection per token is cheapest.
+The idea is to identify **Border Inputs**, for which sampling at T=0 doesn't always give the same output (looking only at the first token of output). Example, recorded against `mistral-7b-instruct-v0.3` on Together: the single-token prompt `'hike'` answered `' H'` 2 times out of 3, and `' Title'` once. Border Inputs can easily be found just from black-box sampling, trying thousands of short inputs and keeping the border inputs. Then, being at T=0 makes any change in the model likely to move this border and result in a notably different output distribution when we sample each Border Input a few times.
 
-B3IT runs in two phases, using 1-token prompts and 1-token completions:
+Concretely, B3IT runs in two phases:
 
-1. **Phase 1 — find Border Inputs.** Probe the endpoint with a few thousand single-token prompts (3 queries each); keep the prompts whose output flips, sample each ~100× to estimate its reference output distribution, and keep the most balanced ones.
-2. **Phase 2 — monitor.** Re-sample the selected Border Inputs daily (a few hundred 1-token queries, a fraction of a cent) and compare each day's output distributions to the reference (mean total variation distance). A sustained deviation from the trailing baseline flags a change.
+1. **Phase 1 — find Border Inputs.** Try thousands of single-token prompts (3 queries each) and keep the Border Inputs; sample each ~100× to estimate its reference output distribution, and keep the most balanced ones.
+2. **Phase 2 — monitor.** Re-sample the selected Border Inputs daily and compare each day's output distributions to the reference (mean total variation distance). A sustained deviation from the trailing baseline flags a change.
 
-## Demo: replay real detections
+## Demo: replay a real detection
 
-The demo replays the full pipeline on **real data recorded by our production monitor** against `mistral-7b-instruct-v0.3` served by Together — a change caught in the wild that Together's changelog later corroborated (the endpoint was silently redirected to `Ministral-3-14B-Instruct-2512` on 2026-01-29).
+Did you know that if you had something running on `mistral-7b-instruct-v0.3` from Together AI, they silently (though with a public announcement) redirected it to the entirely different `Ministral-3-14B-Instruct-2512` in January 2026? The demo replays the full pipeline on the **real data recorded by our production monitor** as it caught this change.
 
 Requires only [uv](https://docs.astral.sh/uv/):
 
