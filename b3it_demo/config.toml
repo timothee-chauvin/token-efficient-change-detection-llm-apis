@@ -1,0 +1,29 @@
+# Values copied verbatim from the production monitor's config.toml
+# (only the sections the replay needs).
+
+[bi]
+samples_per_day = 200  # BIs (top_k_bis=20) x samples/BI/day (queries_per_token=10), the monitoring cadence
+
+[bi.phase_1]
+queries_per_token = 3
+tokens_per_endpoint = 5000
+target_border_inputs = 50
+
+[bi.phase_2]
+queries_per_token = 10
+
+[bi.detection]
+window = 14
+exclusion = 4
+min_baseline = 5
+sigma_k = 4.0
+abs_delta = 0.2
+persistence = 3
+cooldown = 10
+instability_window = 14
+instability_threshold = 0.4
+
+[bi.reinit]
+reference_samples = 100
+top_k_bis = 20
+min_bis = 10
