@@ -1,6 +1,8 @@
 """Shared terminal rendering helpers."""
 
+import os
 import sys
+import time
 from collections import Counter
 
 from rich.console import Console
@@ -12,7 +14,17 @@ console = Console(highlight=False)
 
 def pause(fast: bool, message: str = "press Enter when ready") -> None:
     """Wait for the user before things start moving."""
-    if fast or not sys.stdin.isatty():
+    if fast:
+        return
+    # used when recording the README demo (scripts/record_demo.sh): show the
+    # pause but don't wait for input
+    auto_seconds = os.environ.get("B3IT_DEMO_AUTO_PAUSE_SECONDS")
+    if auto_seconds is not None:
+        console.print(f"  [dim italic]{message}[/]")
+        time.sleep(float(auto_seconds))
+        console.print()
+        return
+    if not sys.stdin.isatty():
         return
     try:
         console.input(f"  [dim italic]{message}[/] ")
