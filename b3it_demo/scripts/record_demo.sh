@@ -4,7 +4,7 @@
 set -e
 cast=$(mktemp --suffix=.cast)
 script -qc "stty rows 44 cols 100; \
-  B3IT_DEMO_AUTO_PAUSE_SECONDS=3 \
+  B3IT_DEMO_AUTO_PAUSE_SECONDS=10 \
   uvx asciinema rec --overwrite -c 'uv run b3it-demo < /dev/null' $cast" /dev/null
 npx --yes svg-term-cli --in "$cast" --out assets/demo.svg --window
 rm "$cast"
