@@ -24,20 +24,7 @@ cd b3it_demo
 uv run b3it-demo
 ```
 
-```
-  candidate #1  'hike'             → ' H' ×2 │ ' Title' ×1
-  candidate #2  'piration'         → ' It' ×2 │ ' Insp' ×1
-  ...
-  2026-01-28   0.068  ▉
-  2026-01-29   0.040  ▌
-  2026-01-30   1.000  ████████████   ▲ deviates
-  2026-01-31   1.000  ████████████   ▲ deviates
-  2026-02-01   1.000  ████████████   ▲ deviates
-
-╭──────────────────────────────────────────────────────────────────────────╮
-│  CHANGE DETECTED on 2026-02-01 — sustained deviation since 2026-01-30    │
-╰──────────────────────────────────────────────────────────────────────────╯
-```
+![B3IT demo replay](b3it_demo/assets/demo.svg)
 
 The detection code in the demo (`detection.py`, `analyze.py`) is vendored unchanged from the production monitor, with its production configuration; the replayed data is the monitor's raw recorded samples.
 

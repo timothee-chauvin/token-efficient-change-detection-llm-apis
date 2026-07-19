@@ -16,7 +16,8 @@ from b3it_demo.phase_1 import is_border_input, iter_probes
 from b3it_demo.render import console, format_dist, money, pause, phase_header
 
 PHASE_1A_SECONDS = 8.0
-PHASE_1B_ROW_SECONDS = 0.12
+PHASE_1B_SECONDS = 3.0
+PHASE_1B_TICKS = 20
 PROBES_PER_TICK = 25
 
 
@@ -108,22 +109,41 @@ def replay_phase_1b(
         f"{r.top_k_bis} by balance score (second-most-common ÷ most-common count).\n"
         "Balanced BIs sit closest to a decision border, where a model change is "
         "most visible.\n\n"
-        "The recorded reference distributions will fill in, ranked by balance.",
+        "The recorded samples will now accumulate live, all candidates in "
+        "parallel; the final\ntable is ranked by balance.",
     )
     pause(fast, "press Enter to estimate the references")
 
     _, reference = reference_batch(endpoint.phase_2)
     kept = select_top_bis(reference, r.top_k_bis)
     ranked = select_top_bis(reference, len(reference))
+    # candidates in discovery order during the fill; ranked order at the end
+    order = [p for p in candidates if p in reference] or list(reference)
 
-    table = Table(show_edge=False, pad_edge=False)
-    table.add_column("rank", justify="right", style="dim")
-    table.add_column("Border Input")
-    table.add_column("reference distribution")
-    table.add_column("balance", justify="right")
-    table.add_column("")
+    def fill_table(n: int) -> Table:
+        table = Table(show_edge=False, pad_edge=False)
+        table.add_column("Border Input")
+        table.add_column("reference distribution")
+        table.add_column("balance", justify="right")
+        table.add_column("samples", justify="right", style="dim")
+        for prompt in order:
+            k = min(n, len(reference[prompt]))
+            dist = get_distribution(reference[prompt][:k])
+            table.add_row(
+                repr(prompt),
+                format_dist(dist),
+                f"{balance_score(dist):.2f}",
+                f"{k}/{len(reference[prompt])}",
+            )
+        return table
 
-    with Live(table, console=console):
+    def final_table() -> Table:
+        table = Table(show_edge=False, pad_edge=False)
+        table.add_column("rank", justify="right", style="dim")
+        table.add_column("Border Input")
+        table.add_column("reference distribution")
+        table.add_column("balance", justify="right")
+        table.add_column("")
         for rank, prompt in enumerate(ranked, 1):
             dist = get_distribution(reference[prompt])
             in_top = prompt in kept
@@ -135,8 +155,18 @@ def replay_phase_1b(
                 "[green]kept[/]" if in_top else "[red dim]dropped[/]",
                 style=None if in_top else "dim",
             )
-            if not fast:
-                time.sleep(PHASE_1B_ROW_SECONDS)
+        return table
+
+    if not fast:
+        max_n = max(len(samples) for samples in reference.values())
+        step = max(1, round(max_n / PHASE_1B_TICKS))
+        # transient: the fill vanishes and the final table is printed normally,
+        # so it scrolls instead of being cropped on short terminals
+        with Live(fill_table(0), console=console, transient=True) as live:
+            for n in range(step, max_n + 1, step):
+                live.update(fill_table(n))
+                time.sleep(PHASE_1B_SECONDS / PHASE_1B_TICKS)
+    console.print(final_table())
 
     cost = estimate_cost(endpoint, {p: r.reference_samples for p in reference})
     console.print(
